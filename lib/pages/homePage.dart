@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/widgets/barcodeWidget.dart';
 
-import '../models/product_mode.dart';
+import '../models/product_model.dart';
 import '../services/database_helper.dart';
 import '../widgets/sideMenu.dart';
 

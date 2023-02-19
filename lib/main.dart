@@ -4,6 +4,7 @@ import 'package:flutter_application/widgets/sideMenu.dart';
 import 'pages/homePage.dart';
 
 /// Точка входа приложения
+
 void main() => runApp(const MeRestaurantApp());
 
 /// Основной управляющий класс

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/product_mode.dart';
+import '../models/product_model.dart';
 
 class BarcodeWidget extends StatelessWidget {
   final ProductModel productModel;
@@ -30,7 +30,7 @@ class BarcodeWidget extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    productModel.barcode,
+                    productModel.name,
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_application/controllers/barcodeController.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-import '../models/product_mode.dart';
+import '../models/product_model.dart';
 import '../services/database_helper.dart';
 import 'sideMenu.dart';
 
@@ -66,10 +66,11 @@ class _ScannerWidgetState extends State<ScannerWidget> {
     // setState to update our non-existent appearance.
     if (!mounted) return;
 
-    ProductModel model = ProductModel(barcode: barcodeScanRes, name: 'default');
-    await DatabaseHelper.addProduct(model);
+    ProductModel model =
+        ProductModel(id: 0, barcode: barcodeScanRes, name: "test");
+    await DatabaseHelper.insertProduct(model);
 
-    await createProduct(model);
+    // await createProduct(model);
 
     final TextEditingController _controller = TextEditingController();
     Future<ProductModel>? _futureProductModel;

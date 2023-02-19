@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter_application/models/product_mode.dart';
+import 'package:flutter_application/models/product_model.dart';
 import 'package:http/http.dart' as http;
 
 Future<ProductModel> createProduct(ProductModel model) async {
@@ -9,8 +9,8 @@ Future<ProductModel> createProduct(ProductModel model) async {
       'Content-Type': 'application/json; charset=UTF-8',
     },
     body: jsonEncode(<String, String>{
-      'barcode': model.barcode,
-      'name': model.name,
+      // 'barcode': model.barcode,
+      // 'name': model.name,
     }),
   );
 
