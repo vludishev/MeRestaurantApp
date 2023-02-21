@@ -25,7 +25,10 @@ class _ScannerWidgetState extends State<ScannerWidget> {
   Future<void> startBarcodeScanStream() async {
     FlutterBarcodeScanner.getBarcodeStreamReceiver(
             '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
-        .listen((barcode) => print(barcode));
+        .listen((barcode) async {
+      ProductModel model = ProductModel(barcode: barcode, name: "test");
+      await DatabaseHelper.insertProduct(model);
+    });
   }
 
   Future<void> scanQR() async {
@@ -66,9 +69,9 @@ class _ScannerWidgetState extends State<ScannerWidget> {
     // setState to update our non-existent appearance.
     if (!mounted) return;
 
-    ProductModel model =
-        ProductModel(id: 0, barcode: barcodeScanRes, name: "test");
-    await DatabaseHelper.insertProduct(model);
+    // ProductModel model =
+    //     ProductModel(id: 0, barcode: barcodeScanRes, name: "test");
+    // await DatabaseHelper.insertProduct(model);
 
     // await createProduct(model);
 

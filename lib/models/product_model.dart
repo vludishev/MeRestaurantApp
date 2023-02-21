@@ -1,12 +1,10 @@
-import 'dart:ffi';
-
 class ProductModel {
-  final int id;
+  final int? id;
   final String barcode;
   final String name;
 
   const ProductModel({
-    required this.id,
+    this.id,
     required this.barcode,
     required this.name,
   });

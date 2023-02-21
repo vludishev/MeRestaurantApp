@@ -10,9 +10,17 @@ class DatabaseHelper {
   static Future<Database> _getDB() async {
     return openDatabase(
       join(await getDatabasesPath(), _dbName),
-      onCreate: (db, version) async => await db.execute(
-        'CREATE TABLE Products(id INTEGER PRIMARY KEY, barcode TEXT, name TEXT)',
-      ),
+      onCreate: (db, version) async {
+        await db.execute("PRAGMA foreign_keys = ON;");
+        await db.execute(
+            'CREATE TABLE Products(id INTEGER PRIMARY KEY, barcode TEXT, name TEXT);');
+        await db.execute("CREATE TABLE StockRecount ("
+            "id INTEGER PRIMARY KEY,"
+            "quantity INTEGER NOT NULL,"
+            "productId INTEGER NOT NULL,"
+            "FOREIGN KEY (productId)"
+            "REFERENCES Products (productId));");
+      },
       version: _version,
     );
   }
@@ -40,9 +48,9 @@ class DatabaseHelper {
   static Future<int> deleteProduct(ProductModel product) async {
     final db = await _getDB();
     return await db.delete(
-      "products",
+      "Products",
       where: 'id = ?',
-      whereArgs: [product.name],
+      whereArgs: [product.id],
     );
   }
 

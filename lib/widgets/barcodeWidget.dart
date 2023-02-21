@@ -30,7 +30,7 @@ class BarcodeWidget extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    productModel.name,
+                    productModel.barcode.toString(),
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
