@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_application/controllers/barcodeController.dart';
+import 'package:flutter_application/models/stock_recount_model.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
 import '../models/product_model.dart';
@@ -26,8 +26,15 @@ class _ScannerWidgetState extends State<ScannerWidget> {
     FlutterBarcodeScanner.getBarcodeStreamReceiver(
             '#ff6666', 'Cancel', true, ScanMode.BARCODE)!
         .listen((barcode) async {
-      ProductModel model = ProductModel(barcode: barcode, name: "test");
-      await DatabaseHelper.insertProduct(model);
+      final intBarcode = int.parse(barcode as String);
+      if (intBarcode > 0) {
+        Product model =
+            Product(id: intBarcode, name: "test", createdTime: DateTime.now());
+        await DatabaseHelper.createProduct(model);
+
+        // StockRecount stModel = StockRecount(productId: intBarcode, quantity: 4);
+        // await DatabaseHelper.create(model);
+      }
     });
   }
 
@@ -69,18 +76,56 @@ class _ScannerWidgetState extends State<ScannerWidget> {
     // setState to update our non-existent appearance.
     if (!mounted) return;
 
+    final intBarcode = int.parse(barcodeScanRes);
+    if (intBarcode > 0) {
+      Product model =
+          Product(id: intBarcode, name: "test", createdTime: DateTime.now());
+      await DatabaseHelper.createProduct(model);
+
+      //StockRecount stModel = StockRecount(productId: intBarcode, quantity: 4);
+      if (!await DatabaseHelper.getStockRecountProduct(intBarcode)) {
+        // ignore: use_build_context_synchronously
+        _dialogBuilder(context);
+      }
+    }
+
     // ProductModel model =
     //     ProductModel(id: 0, barcode: barcodeScanRes, name: "test");
     // await DatabaseHelper.insertProduct(model);
 
     // await createProduct(model);
-
-    final TextEditingController _controller = TextEditingController();
-    Future<ProductModel>? _futureProductModel;
-
     setState(() {
       _scanBarcode = barcodeScanRes;
     });
+  }
+
+  Future<void> startStockRecount() async {
+    final barcodeInt = int.parse(_scanBarcode);
+    final quantity = await DatabaseHelper.getCountProduct(barcodeInt);
+    StockRecount model =
+        StockRecount(productId: barcodeInt, quantity: quantity ?? 0);
+
+    await DatabaseHelper.createProductInStock(model);
+  }
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Запуск пересчёта'),
+        content: const Text('Нет активного пересчёта.\n Хотите начать новый?'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Отмена'),
+          ),
+          TextButton(
+            onPressed: () async => await startStockRecount(),
+            child: const Text('ОК'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

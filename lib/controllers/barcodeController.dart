@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_application/models/product_model.dart';
 import 'package:http/http.dart' as http;
 
-Future<ProductModel> createProduct(ProductModel model) async {
+Future<Product> createProduct(Product model) async {
   final response = await http.post(
     Uri.parse('https://jsonplaceholder.typicode.com/albums'),
     headers: <String, String>{
@@ -17,7 +17,7 @@ Future<ProductModel> createProduct(ProductModel model) async {
   if (response.statusCode == 201) {
     // If the server did return a 201 CREATED response,
     // then parse the JSON.
-    return ProductModel.fromJson(jsonDecode(response.body));
+    return Product.fromJson(jsonDecode(response.body));
   } else {
     // If the server did not return a 201 CREATED response,
     // then throw an exception.

@@ -22,9 +22,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: FutureBuilder<List<ProductModel>?>(
+      body: FutureBuilder<List<Product>?>(
         future: DatabaseHelper.getAllProducts(),
-        builder: (context, AsyncSnapshot<List<ProductModel>?> snapshot) {
+        builder: (context, AsyncSnapshot<List<Product>?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           } else if (snapshot.hasError) {
@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.data != null) {
               return ListView.builder(
                 itemBuilder: (context, index) => BarcodeWidget(
-                  productModel: snapshot.data![index],
+                  product: snapshot.data![index],
                   onTap: () => {},
                   // onTap: () async {
                   //   await Navigator.push(
@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
                                         MaterialStateProperty.all(Colors.red)),
                                 onPressed: () async {
                                   await DatabaseHelper.deleteProduct(
-                                      snapshot.data![index]);
+                                      snapshot.data![index].id!);
                                   Navigator.pop(context);
                                   setState(() {});
                                 },

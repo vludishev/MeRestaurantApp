@@ -16,5 +16,6 @@
         "titleBar.activeBackground": "#247c9e",
         "titleBar.border": "#247c9e",
         "titleBar.inactiveBackground": "#247c9e99"
-    }
+    },
+    "cSpell.language": "en,ru-RU"
 }

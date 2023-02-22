@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 
 class BarcodeWidget extends StatelessWidget {
-  final ProductModel productModel;
+  final Product product;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
   const BarcodeWidget(
       {Key? key,
-      required this.productModel,
+      required this.product,
       required this.onTap,
       required this.onLongPress})
       : super(key: key);
@@ -30,7 +30,7 @@ class BarcodeWidget extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    productModel.barcode.toString(),
+                    product.id.toString(),
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),

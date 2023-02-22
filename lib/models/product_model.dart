@@ -1,19 +1,42 @@
-class ProductModel {
-  final int? id;
-  final String barcode;
-  final String name;
+const String tableProducts = 'products';
 
-  const ProductModel({
+class ProductFields {
+  static final List<String> values = [
+    /// Добавить все поля
+    id, name, time
+  ];
+
+  static const String id = '_id';
+  static const String name = 'name';
+  static const String time = 'time';
+}
+
+class Product {
+  final int? id;
+  final String name;
+  final DateTime createdTime;
+
+  const Product({
     this.id,
-    required this.barcode,
     required this.name,
+    required this.createdTime,
   });
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) => ProductModel(
-        id: json['id'],
-        barcode: json['barcode'],
-        name: json['name'],
+  Map<String, Object?> toJson() => {
+        ProductFields.id: id,
+        ProductFields.name: name,
+        ProductFields.time: createdTime.toIso8601String(),
+      };
+
+  static Product fromJson(Map<String, Object?> json) => Product(
+        id: json[ProductFields.id] as int?,
+        name: json[ProductFields.name] as String,
+        createdTime: DateTime.parse(json[ProductFields.time] as String),
       );
 
-  Map<String, dynamic> toJson() => {'id': id, 'barcode': barcode, 'name': name};
+  Product copy({int? id, String? name, DateTime? createdTime}) => Product(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        createdTime: createdTime ?? this.createdTime,
+      );
 }
