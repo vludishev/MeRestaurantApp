@@ -13,24 +13,24 @@ class StockRecountFields {
 
 class StockRecount {
   final int? id;
-  final int? productId;
+  final int productId;
   final int quantity;
 
   const StockRecount({
     this.id,
-    this.productId,
+    required this.productId,
     required this.quantity,
   });
 
   Map<String, Object?> toJson() => {
         StockRecountFields.id: id,
         StockRecountFields.productId: productId,
-        StockRecountFields.quantity: StockRecountFields.quantity,
+        StockRecountFields.quantity: quantity,
       };
 
   static StockRecount fromJson(Map<String, Object?> json) => StockRecount(
         id: json[StockRecountFields.id] as int?,
-        productId: json[StockRecountFields.productId] as int?,
+        productId: json[StockRecountFields.productId] as int,
         quantity: json[StockRecountFields.quantity] as int,
       );
 

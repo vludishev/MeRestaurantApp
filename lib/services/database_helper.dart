@@ -1,4 +1,4 @@
-import 'package:flutter_application/models/stock_recount_model.dart';
+import 'package:flutter_application/models/stock_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -6,6 +6,11 @@ import '../models/product_model.dart';
 
 /// Helper для баз данных
 class DatabaseHelper {
+  static const idType = 'INTEGER PRIMARY KEY';
+  static const textType = 'TEXT NOT NULL';
+  static const intType = 'INTEGER NOT NULL';
+  static const cascadeDelete = 'ON DELETE NO ACTION ON UPDATE NO ACTION';
+
   /// Instance для инициализации базы данных
   static final DatabaseHelper instance = DatabaseHelper._init();
 
@@ -35,22 +40,14 @@ class DatabaseHelper {
   }
 
   Future _createDB(Database db, int version) async {
-    const idType = 'INTEGER PRIMARY KEY';
-    const textType = 'TEXT NOT NULL';
-    const intType = 'INTEGER NOT NULL';
-    const cascadeDelete = 'ON DELETE NO ACTION ON UPDATE NO ACTION';
-
     // Создание таблицы "Products"
-    await db.execute('''
-      CREATE TABLE $tableProducts (
-        ${ProductFields.id} $idType,
-        ${ProductFields.name} $textType,
-        ${ProductFields.time} $textType
-      )
-      ''');
+    await db.execute(createProductTable);
 
     // Создание таблицы "StockRecount"
-    await db.execute('''
+    await db.execute(createStockTable);
+  }
+
+  static const String createStockTable = '''
       CREATE TABLE $tableStockRecount (
         ${StockRecountFields.id} $idType AUTOINCREMENT,
         ${StockRecountFields.quantity} $intType,
@@ -59,8 +56,19 @@ class DatabaseHelper {
           REFERENCES $tableProducts (${ProductFields.id})
           $cascadeDelete
       )
-      ''');
-  }
+      ''';
+
+  static const String createProductTable = '''
+      CREATE TABLE $tableProducts (
+        ${ProductFields.id} $idType,
+        ${ProductFields.name} $textType,
+        ${ProductFields.time} $textType
+      )
+      ''';
+
+  static const String dropStockTable = '''
+    DROP TABLE IF EXISTS $tableStockRecount
+''';
 
   static Future<Product> createProduct(Product product) async {
     final db = await instance.database;
@@ -84,30 +92,12 @@ class DatabaseHelper {
     return stock.copy(id: id);
   }
 
-  static Future<bool> getStockRecountProduct(int productId) async {
-    final db = await instance.database;
-
-    final maps = await db.query(
-      tableStockRecount,
-      columns: StockRecountFields.values,
-      where: '${StockRecountFields.productId} = ?',
-      whereArgs: [productId],
-    );
-
-    if (maps.isNotEmpty) {
-      return true;
-    }
-
-    return false;
-  }
-
-  static Future<int?> getCountProduct(int productId) async {
+  static Future<int?> getCountProduct() async {
     final db = await instance.database;
 
     return Sqflite.firstIntValue(await db.rawQuery('''
-      SELECT COUNT(${StockRecountFields.productId}) 
+      SELECT COUNT(*) 
       FROM $tableStockRecount
-      WHERE ${StockRecountFields.productId} = $productId
   '''));
   }
 
@@ -123,6 +113,14 @@ class DatabaseHelper {
     final db = await instance.database;
 
     db.close();
+  }
+
+  static Future<void> recreateStockTable() async {
+    final db = await instance.database;
+
+    await db.execute(dropStockTable);
+
+    await db.execute(createStockTable);
   }
 
   static Future<int> update(Product product) async {
