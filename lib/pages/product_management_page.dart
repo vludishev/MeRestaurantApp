@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application/entities/box_entity.dart';
+import 'package:flutter_application/models/product_management_view_model.dart';
 import 'package:flutter_application/widgets/barcode_widget.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
@@ -111,7 +112,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
     //   return;
     // }
 
-    createProduct(boxBarcode, itemBarcode);
+    await createProduct(boxBarcode, itemBarcode);
   }
 
   Future<void> createProduct(int boxBarcode, int itemBarcode) async {
@@ -145,6 +146,10 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                       decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: 'Enter the number of packages'),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: <TextInputFormatter>[
+                        FilteringTextInputFormatter.digitsOnly
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -154,6 +159,10 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                         border: const OutlineInputBorder(),
                         hintText:
                             'Enter the number items ${selectedPackagingTypes[2] ? 'of package' : ''}'),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly
+                    ],
                   ),
                   const SizedBox(height: 10),
                   ToggleButtons(
@@ -183,7 +192,11 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                     style: TextButton.styleFrom(
                       textStyle: const TextStyle(fontSize: 20),
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      await createDirectoryItems(
+                          itemBarcode, boxBarcode, selectedPackagingTypes[2]);
+                      Navigator.pop(context, 'Save');
+                    },
                     child: const Text('Save'),
                   ),
                 ],
@@ -193,10 +206,14 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
         ),
       ),
     );
+  }
 
-    var packagesNumber = numberPackagesController.value as int;
-    var itemsNumber = numberItemsController.value as int;
-    if (selectedPackagingTypes[2]) {
+  Future<void> createDirectoryItems(
+      int itemBarcode, int boxBarcode, bool package) async {
+    var itemsNumber = int.parse(numberItemsController.text);
+    int packagesNumber = 0;
+    if (package) {
+      packagesNumber = int.parse(numberPackagesController.text);
       itemsNumber *= packagesNumber;
     }
 
@@ -213,11 +230,9 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
 
     var quantity = await DatabaseHelper.getCountProduct() ?? 0;
     if (quantity > 0) {
-      startStockRecount(quantity);
+      stackRecountDialog(quantity);
       return;
     }
-    // // ignore: use_build_context_synchronously
-    // stackRecountDialog(context, quantity);
   }
 
   // Future<void> packagingTypeDialog(BuildContext context) {
@@ -254,7 +269,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
   //   );
   // }
 
-  Future<void> stackRecountDialog(BuildContext context, int quantity) {
+  Future<void> stackRecountDialog(int quantity) {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
@@ -340,9 +355,10 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
           // icon: const Icon(Icons.more_horiz_sharp)),
         ],
       ),
-      body: FutureBuilder<List<Product>?>(
+      body: FutureBuilder<List<ProductManagementViewModel>?>(
         future: DatabaseHelper.getAllProducts(),
-        builder: (context, AsyncSnapshot<List<Product>?> snapshot) {
+        builder: (context,
+            AsyncSnapshot<List<ProductManagementViewModel>?> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
           } else if (snapshot.hasError) {
@@ -376,7 +392,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                                       MaterialStateProperty.all(Colors.red)),
                               onPressed: () async {
                                 await DatabaseHelper.deleteProduct(
-                                    snapshot.data![index].id!);
+                                    snapshot.data![index].productBarcode!);
                                 Navigator.pop(context);
                                 setState(() {});
                               },

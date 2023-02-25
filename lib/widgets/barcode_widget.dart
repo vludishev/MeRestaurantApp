@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../entities/product_entity.dart';
+import '../models/product_management_view_model.dart';
 
 class BarcodeWidget extends StatelessWidget {
-  final Product product;
+  final ProductManagementViewModel product;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
   const BarcodeWidget(
@@ -26,40 +26,53 @@ class BarcodeWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    product.id.toString(),
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        'Продукт: ${product.productBarcode}',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                    const Spacer(),
+                    Expanded(
+                      child: Text(
+                        'Упаковка: ${product.boxBarcode}',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                  ],
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Align(
                     alignment: Alignment.center,
                     child: Text(
-                      product.name.toString(),
+                      product.productName,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
                 Row(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Expanded(
                       child: Text(
-                        'Test1',
-                        style: TextStyle(
+                        'Пачек: ${product.quantityPack}',
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.right,
                       ),
                     ),
-                    Spacer(),
+                    const Spacer(),
                     Expanded(
                       child: Text(
-                        'Test2',
-                        style: TextStyle(
+                        'Единиц: ${product.quantityUnit}',
+                        style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.left,
                       ),

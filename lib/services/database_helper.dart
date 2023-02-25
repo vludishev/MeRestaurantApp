@@ -4,6 +4,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 import '../entities/product_entity.dart';
+import '../models/product_management_view_model.dart';
 
 /// Helper для баз данных
 class DatabaseHelper {
@@ -46,6 +47,9 @@ class DatabaseHelper {
 
     // Создание таблицы "StockRecount"
     await db.execute(createStockTable);
+
+    // Создание таблицы "Boxes"
+    await db.execute(createBoxTable);
   }
 
   static const String createStockTable = '''
@@ -63,21 +67,25 @@ class DatabaseHelper {
       CREATE TABLE $tableProducts (
         ${ProductFields.id} $idType,
         ${ProductFields.name} $textType,
+        ${ProductFields.quantity} $intType,
         ${ProductFields.time} $textType
       )
       ''';
 
   static const String createBoxTable = '''
-      CREATE TABLE $tableProducts (
-        ${ProductFields.id} $idType,
-        ${ProductFields.name} $textType,
-        ${ProductFields.time} $textType
+      CREATE TABLE $tableBoxes (
+        ${BoxFields.id} $idType,
+        ${BoxFields.productId} $intType,
+        ${BoxFields.quantity} $intType,
+        FOREIGN KEY (${BoxFields.productId}) 
+          REFERENCES $tableProducts (${ProductFields.id})
+          $cascadeDelete
       )
       ''';
 
   static const String dropStockTable = '''
     DROP TABLE IF EXISTS $tableStockRecount
-''';
+  ''';
 
   static Future<Product> createProduct(Product product) async {
     final db = await instance.database;
@@ -94,7 +102,7 @@ class DatabaseHelper {
     final db = await instance.database;
 
     final id = await db.insert(
-      tableProducts,
+      tableBoxes,
       box.toJson(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -121,12 +129,17 @@ class DatabaseHelper {
   '''));
   }
 
-  static Future<List<Product>> getAllProducts() async {
+  static Future<List<ProductManagementViewModel>> getAllProducts() async {
     final db = await instance.database;
 
-    final result = await db.query(tableProducts);
+    final result = await db.rawQuery('''
+      SELECT * FROM $tableProducts
+      JOIN $tableBoxes ON products._id = ${BoxFields.productId}
+    ''');
 
-    return result.map((json) => Product.fromJson(json)).toList();
+    return result
+        .map((json) => ProductManagementViewModel.fromJson(json))
+        .toList();
   }
 
   Future close() async {
