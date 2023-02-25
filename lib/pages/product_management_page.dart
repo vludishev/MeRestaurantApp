@@ -1,16 +1,24 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application/entities/box_entity.dart';
 import 'package:flutter_application/widgets/barcode_widget.dart';
-import 'package:flutter_application/widgets/scanner_widget.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-import '../models/product_model.dart';
-import '../models/stock_model.dart';
+import '../entities/product_entity.dart';
+import '../entities/stock_entity.dart';
+import '../custom_icons_icons.dart';
 import '../services/database_helper.dart';
 import '../widgets/side_menu_widget.dart';
 
 enum SampleItem { itemOne, itemTwo, itemThree }
+
+enum PackagingType { box, pack, unit }
+
+const List<Widget> icons = <Widget>[
+  Icon(CustomIcons.box),
+  Icon(CustomIcons.product_hunt),
+  Icon(CustomIcons.unity),
+];
 
 /// Вкладка с базовой информацией по штрих-кодам
 class ProductManagementPage extends StatefulWidget {
@@ -19,24 +27,34 @@ class ProductManagementPage extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _ProductManagementPageState createState() => _ProductManagementPageState();
+  State<ProductManagementPage> createState() => _ProductManagementPageState();
 }
 
 /// Состояние (данные) вкладки с базовой информацией
 class _ProductManagementPageState extends State<ProductManagementPage> {
-  String _scanBarcode = 'Unknown';
+  int _scanBarcode = 0;
+
+  final productNameController = TextEditingController();
+  final numberPackagesController = TextEditingController();
+  final numberItemsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
   }
 
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    productNameController.dispose();
+    super.dispose();
+  }
+
   SampleItem? selectedMenu;
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> scanBarcodeNormal(String packagingType) async {
+  Future<bool> scan() async {
     String barcodeScanRes;
-    // Platform messages may fail, so we use a try/catch PlatformException.
+
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           '#ff6666', 'Cancel', true, ScanMode.BARCODE);
@@ -45,30 +63,196 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
       barcodeScanRes = 'Failed to get platform version.';
     }
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
     setState(() {
-      _scanBarcode = barcodeScanRes;
+      _scanBarcode = int.parse(barcodeScanRes);
     });
 
-    final intBarcode = int.parse(barcodeScanRes);
-    if (intBarcode > 0) {
-      Product model =
-          Product(id: intBarcode, name: "test", createdTime: DateTime.now());
-      await DatabaseHelper.createProduct(model);
-
-      var quantity = await DatabaseHelper.getCountProduct() ?? 0;
-      if (quantity > 0) {
-        startStockRecount(quantity);
-        return;
-      }
-      // ignore: use_build_context_synchronously
-      stackRecountDialog(context, quantity);
-    }
+    return true;
   }
+
+  Future<void> showMessageBox(String message) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'Cancel'),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'OK'),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> scanBarcodeNormal() async {
+    if (!mounted) return;
+    int boxBarcode = 0;
+    int itemBarcode = 0;
+
+    await showMessageBox('Сканируйте коробку').then((value) async {
+      await scan();
+      boxBarcode = _scanBarcode;
+    });
+
+    await showMessageBox('Теперь сканируйте один элемент содержимого в коробке')
+        .then((value) async {
+      await scan();
+      itemBarcode = _scanBarcode;
+    });
+
+    // if (boxBarcode == itemBarcode) {
+    //   await showMessageBox('Некорректные значения штрих-кодов');
+    //   return;
+    // }
+
+    createProduct(boxBarcode, itemBarcode);
+  }
+
+  Future<void> createProduct(int boxBarcode, int itemBarcode) async {
+    final List<bool> selectedPackagingTypes = <bool>[true, true, false];
+
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text('Box barcode: $boxBarcode'),
+                  const SizedBox(height: 10),
+                  Text(
+                      '${selectedPackagingTypes[2] ? 'Package' : 'Product'} barcode: $itemBarcode'),
+                  const SizedBox(height: 10),
+                  TextField(
+                      controller: productNameController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter the product name')),
+                  const SizedBox(height: 10),
+                  Visibility(
+                    visible: selectedPackagingTypes[2],
+                    child: TextField(
+                      controller: numberPackagesController,
+                      decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter the number of packages'),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: numberItemsController,
+                    decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        hintText:
+                            'Enter the number items ${selectedPackagingTypes[2] ? 'of package' : ''}'),
+                  ),
+                  const SizedBox(height: 10),
+                  ToggleButtons(
+                    direction: Axis.horizontal,
+                    onPressed: (int index) {
+                      // All buttons are selectable.
+                      setState(() {
+                        selectedPackagingTypes[index] =
+                            !selectedPackagingTypes[index];
+                        // print(_selectedPackagingTypes[index]);
+                      });
+                    },
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
+                    selectedBorderColor: Colors.green[700],
+                    selectedColor: Colors.white,
+                    fillColor: Colors.green[200],
+                    color: Colors.green[400],
+                    constraints: const BoxConstraints(
+                      minHeight: 40.0,
+                      minWidth: 80.0,
+                    ),
+                    isSelected: selectedPackagingTypes,
+                    children: icons,
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      textStyle: const TextStyle(fontSize: 20),
+                    ),
+                    onPressed: () {},
+                    child: const Text('Save'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    var packagesNumber = numberPackagesController.value as int;
+    var itemsNumber = numberItemsController.value as int;
+    if (selectedPackagingTypes[2]) {
+      itemsNumber *= packagesNumber;
+    }
+
+    Product product = Product(
+        id: itemBarcode,
+        name: productNameController.text,
+        quantity: itemsNumber,
+        createdTime: DateTime.now());
+    await DatabaseHelper.createProduct(product);
+
+    Box box =
+        Box(id: boxBarcode, productId: itemBarcode, quantity: packagesNumber);
+    await DatabaseHelper.createBox(box);
+
+    var quantity = await DatabaseHelper.getCountProduct() ?? 0;
+    if (quantity > 0) {
+      startStockRecount(quantity);
+      return;
+    }
+    // // ignore: use_build_context_synchronously
+    // stackRecountDialog(context, quantity);
+  }
+
+  // Future<void> packagingTypeDialog(BuildContext context) {
+  //   return showDialog<void>(
+  //     context: context,
+  //     builder: (BuildContext context) => AlertDialog(
+  //       title: const Text('Выберите вид упаковки'),
+  //       actions: [
+  //         const TextField(
+  //           decoration: InputDecoration(
+  //               border: OutlineInputBorder(),
+  //               hintText: 'Введите кол-во ед. товара'),
+  //         ),
+  //         Row(
+  //           children: <Widget>[
+  //             Expanded(
+  //               child: IconButton(
+  //                 iconSize: 100,
+  //                 onPressed: () => scanBarcodeNormal(PackagingType.pack),
+  //                 icon: const Icon(Icons.abc),
+  //               ),
+  //             ),
+  //             Expanded(
+  //               child: IconButton(
+  //                 iconSize: 100,
+  //                 onPressed: () => scanBarcodeNormal(PackagingType.box),
+  //                 icon: const Icon(Icons.add_box),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Future<void> stackRecountDialog(BuildContext context, int quantity) {
     return showDialog<void>(
@@ -94,31 +278,9 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
     );
   }
 
-  Future<void> stackPackagingTypeDialog(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Выберите вид упаковки'),
-        actions: [
-          IconButton(
-            iconSize: 100,
-            onPressed: () => scanBarcodeNormal('pack'),
-            icon: const Icon(Icons.abc),
-          ),
-          IconButton(
-            iconSize: 100,
-            onPressed: () => scanBarcodeNormal('box'),
-            icon: const Icon(Icons.add_box),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> startStockRecount(int quantity) async {
-    final barcodeInt = int.parse(_scanBarcode);
     StockRecount model =
-        StockRecount(productId: barcodeInt, quantity: ++quantity);
+        StockRecount(productId: _scanBarcode, quantity: quantity);
     await DatabaseHelper.createProductInStock(model);
   }
 
@@ -242,7 +404,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
       ),
       drawer: const SideMenuWidget(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => stackPackagingTypeDialog(context),
+        onPressed: () => scanBarcodeNormal(),
         child: const Icon(Icons.add),
       ),
     );

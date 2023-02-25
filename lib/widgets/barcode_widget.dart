@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/product_model.dart';
+import '../entities/product_entity.dart';
 
 class BarcodeWidget extends StatelessWidget {
   final Product product;

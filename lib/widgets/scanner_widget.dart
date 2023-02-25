@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_application/models/stock_model.dart';
+import 'package:flutter_application/entities/stock_entity.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 
-import '../models/product_model.dart';
+import '../entities/product_entity.dart';
 import '../services/database_helper.dart';
 import 'side_menu_widget.dart';
 

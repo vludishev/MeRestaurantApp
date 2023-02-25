@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:flutter_application/models/product_model.dart';
 import 'package:http/http.dart' as http;
+
+import '../entities/product_entity.dart';
 
 Future<Product> createProduct(Product model) async {
   final response = await http.post(

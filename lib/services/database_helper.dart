@@ -1,8 +1,9 @@
-import 'package:flutter_application/models/stock_model.dart';
+import 'package:flutter_application/entities/box_entity.dart';
+import 'package:flutter_application/entities/stock_entity.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../models/product_model.dart';
+import '../entities/product_entity.dart';
 
 /// Helper для баз данных
 class DatabaseHelper {
@@ -66,6 +67,14 @@ class DatabaseHelper {
       )
       ''';
 
+  static const String createBoxTable = '''
+      CREATE TABLE $tableProducts (
+        ${ProductFields.id} $idType,
+        ${ProductFields.name} $textType,
+        ${ProductFields.time} $textType
+      )
+      ''';
+
   static const String dropStockTable = '''
     DROP TABLE IF EXISTS $tableStockRecount
 ''';
@@ -79,6 +88,17 @@ class DatabaseHelper {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
     return product.copy(id: id);
+  }
+
+  static Future<Box> createBox(Box box) async {
+    final db = await instance.database;
+
+    final id = await db.insert(
+      tableProducts,
+      box.toJson(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return box.copy(id: id);
   }
 
   static Future<StockRecount> createProductInStock(StockRecount stock) async {
