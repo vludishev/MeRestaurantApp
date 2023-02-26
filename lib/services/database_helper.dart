@@ -56,10 +56,6 @@ class DatabaseHelper {
       CREATE TABLE $tableStockRecount (
         ${StockRecountFields.id} $idType AUTOINCREMENT,
         ${StockRecountFields.quantity} $intType,
-        ${StockRecountFields.productId} $intType,
-        FOREIGN KEY (${StockRecountFields.productId}) 
-          REFERENCES $tableProducts (${ProductFields.id})
-          $cascadeDelete
       )
       ''';
 

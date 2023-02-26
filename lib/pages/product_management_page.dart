@@ -16,8 +16,6 @@ enum SampleItem { itemOne, itemTwo, itemThree }
 enum PackagingType { box, pack, unit }
 
 const List<Widget> icons = <Widget>[
-  Icon(CustomIcons.box),
-  Icon(CustomIcons.product_hunt),
   Icon(CustomIcons.unity),
 ];
 
@@ -116,7 +114,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
   }
 
   Future<void> createProduct(int boxBarcode, int itemBarcode) async {
-    final List<bool> selectedPackagingTypes = <bool>[true, true, false];
+    final List<bool> selectedPackagingTypes = <bool>[false];
 
     await showDialog<void>(
       context: context,
@@ -131,7 +129,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                   Text('Box barcode: $boxBarcode'),
                   const SizedBox(height: 10),
                   Text(
-                      '${selectedPackagingTypes[2] ? 'Package' : 'Product'} barcode: $itemBarcode'),
+                      '${selectedPackagingTypes[0] ? 'Package' : 'Product'} barcode: $itemBarcode'),
                   const SizedBox(height: 10),
                   TextField(
                       controller: productNameController,
@@ -140,7 +138,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                           hintText: 'Enter the product name')),
                   const SizedBox(height: 10),
                   Visibility(
-                    visible: selectedPackagingTypes[2],
+                    visible: selectedPackagingTypes[0],
                     child: TextField(
                       controller: numberPackagesController,
                       decoration: const InputDecoration(
@@ -158,7 +156,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                     decoration: InputDecoration(
                         border: const OutlineInputBorder(),
                         hintText:
-                            'Enter the number items ${selectedPackagingTypes[2] ? 'of package' : ''}'),
+                            'Кол-во предметов${selectedPackagingTypes[0] ? ' в пачке' : ''}'),
                     keyboardType: TextInputType.number,
                     inputFormatters: <TextInputFormatter>[
                       FilteringTextInputFormatter.digitsOnly
@@ -194,7 +192,7 @@ class _ProductManagementPageState extends State<ProductManagementPage> {
                     ),
                     onPressed: () async {
                       await createDirectoryItems(
-                          itemBarcode, boxBarcode, selectedPackagingTypes[2]);
+                          itemBarcode, boxBarcode, selectedPackagingTypes[0]);
                       Navigator.pop(context, 'Save');
                     },
                     child: const Text('Save'),
