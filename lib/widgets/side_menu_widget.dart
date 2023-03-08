@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/pages/facility_page.dart';
 import 'package:flutter_application/pages/feedback_page.dart';
-import 'package:flutter_application/pages/product_management_page.dart';
+import 'package:flutter_application/pages/login_screen/login_page.dart';
 import 'package:flutter_application/pages/profile_page.dart';
 import 'package:flutter_application/pages/options_page.dart';
 
@@ -45,12 +45,11 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
           ),
           ListTile(
             leading: Icon(Icons.input),
-            title: Text('Product management'),
+            title: Text('Login'),
             onTap: () => {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const ProductManagementPage()),
+                MaterialPageRoute(builder: (context) => LoginPage()),
               ),
             },
           ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application/widgets/side_menu_widget.dart';
-
-import 'pages/product_management_page.dart';
+import 'package:flutter_application/pages/login_screen/login_page.dart';
+import 'package:flutter_application/pages/login_screen/welcome_page.dart';
 
 /// Точка входа приложения
 
@@ -17,7 +16,7 @@ class MeRestaurantApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const ProductManagementPage(),
+      home: WelcomePage(),
     );
   }
 }

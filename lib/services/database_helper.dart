@@ -4,7 +4,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 import '../entities/product_entity.dart';
-import '../models/product_management_view_model.dart';
 
 /// Helper для баз данных
 class DatabaseHelper {
@@ -125,24 +124,24 @@ class DatabaseHelper {
   '''));
   }
 
-  static Future<List<ProductManagementViewModel>> getAllProducts() async {
-    final db = await instance.database;
+  // static Future<List<ProductManagementViewModel>> getAllProducts() async {
+  //   final db = await instance.database;
 
-    final result = await db.rawQuery('''
-      SELECT * FROM $tableProducts
-      JOIN $tableBoxes ON products._id = ${BoxFields.productId}
-    ''');
+  //   final result = await db.rawQuery('''
+  //     SELECT * FROM $tableProducts
+  //     JOIN $tableBoxes ON products._id = ${BoxFields.productId}
+  //   ''');
 
-    return result
-        .map((json) => ProductManagementViewModel.fromJson(json))
-        .toList();
-  }
+  //   return result
+  //       .map((json) => ProductManagementViewModel.fromJson(json))
+  //       .toList();
+  // }
 
-  Future close() async {
-    final db = await instance.database;
+  // Future close() async {
+  //   final db = await instance.database;
 
-    db.close();
-  }
+  //   db.close();
+  // }
 
   static Future<void> recreateStockTable() async {
     final db = await instance.database;
